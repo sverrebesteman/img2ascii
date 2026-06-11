@@ -133,3 +133,33 @@ fn render_to_string(rows: &[Vec<(char, u8, u8, u8)>]) -> String {
     }
     out
 }
+// lmao i got so invested i forgot the main func (btw if ur new func is short for function)
+fn main() {
+    let args = Args::parse();
+
+    if !args.input.exists() {
+        eprintln!("Error: file not found — {}", args.input.display());
+        std::process::exit(1);
+    }
+
+    let img = match image::open(&args.input) {
+        Ok(i) => i,
+        Err(e) => {
+            eprintln!("Error: could not open image — {e}");
+            std::process::exit(1);
+        }
+    };
+
+    let rows = image_to_ascii(&img, &args);
+
+    if let Some(out_path) = &args.output {
+        let text = render_to_string(&rows);
+        if let Err(e) = std::fs::write(out_path, text) {
+            eprintln!("Error writing file: {e}");
+            std::process::exit(1);
+        }
+        println!("Saved to {}", out_path.display());
+    } else {
+        render_to_terminal(&rows, &args.color);
+    }
+}
